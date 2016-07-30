@@ -1,0 +1,38 @@
+{
+  "name": "krixon/money",
+  "license": "proprietary",
+  "type": "library",
+  "description": "Money and currency handling library",
+  "authors": [
+    {
+      "name": "Karl Rixon",
+      "email": "karlrixon@gmail.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@bitbucket.org:krixon/math.git"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Krixon\\Money\\": "src/",
+      "Krixon\\Money\\Test\\": "tests/"
+    }
+  },
+  "require": {
+    "php": ">=7",
+    "ext-intl": "*",
+    "ext-mbstring": "*",
+    "ext-bcmath": "*",
+    "krixon/math": "dev-master"
+
+  },
+  "require-dev": {
+    "phpspec/phpspec": "2.5.*",
+    "phpunit/phpunit": "5.2.*",
+    "squizlabs/php_codesniffer": "2.6.2"
+  },
+  "minimum-stability": "stable"
+}
