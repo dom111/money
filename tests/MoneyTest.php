@@ -788,4 +788,12 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
             [10000, ['1:4', '1:4', '1:2'], [2500, 2500, 5000]],
         ];
     }
+
+
+    public function testCannotSumZeroInstances()
+    {
+        self::expectException(\InvalidArgumentException::class);
+
+        Money::sum();
+    }
 }

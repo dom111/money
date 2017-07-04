@@ -92,6 +92,10 @@ class Money
      */
     public static function sum(Money ...$addends) : Money
     {
+        if (empty($addends)) {
+            throw new \InvalidArgumentException('At least one addend must be supplied.');
+        }
+
         $current = current($addends);
         $result  = static::zero($current->currency());
         $amount  = 0;
