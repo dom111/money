@@ -21,8 +21,10 @@ use Krixon\Math\Ratio;
  * The exponents are available via the Currency class so it's always possible to convert to the correct precision
  * when constructing a Money.
  */
-class Money
+class Money implements CurrencyHolder
 {
+    use HoldsCurrency;
+
     const ROUND_HALF_UP   = PHP_ROUND_HALF_UP;
     const ROUND_HALF_DOWN = PHP_ROUND_HALF_DOWN;
     const ROUND_HALF_EVEN = PHP_ROUND_HALF_EVEN;
@@ -38,11 +40,6 @@ class Money
      * @var int
      */
     private $amount;
-
-    /**
-     * @var Currency
-     */
-    private $currency;
 
     
     /**
@@ -281,7 +278,7 @@ class Money
      */
     public function isSameCurrencyAs(Money $other) : bool
     {
-        return $this->currency->equals($other->currency);
+        return $this->usesSameCurrencyAs($other);
     }
     
     
@@ -294,7 +291,7 @@ class Money
      */
     public function isInCurrency(Currency $currency) : bool
     {
-        return $this->currency->equals($currency);
+        return $this->usesCurrency($currency);
     }
     
     
