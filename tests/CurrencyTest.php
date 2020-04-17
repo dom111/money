@@ -3,13 +3,14 @@
 namespace Krixon\Money\Test;
 
 use Krixon\Money\Currency;
+use PHPUnit\Framework\TestCase;
 
-class CurrencyTest extends \PHPUnit_Framework_TestCase
+class CurrencyTest extends TestCase
 {
     public function testCanInstantiateWithMagicCurrencyCodeMethod()
     {
         $currency = Currency::USD();
         
-        $this->assertInstanceOf(Currency::class, $currency);
+        static::assertInstanceOf(Currency::class, $currency);
     }
 }

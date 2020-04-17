@@ -4,6 +4,7 @@ namespace Krixon\Money;
 
 use Krixon\Math\Decimal;
 use Krixon\Math\Ratio;
+use NumberFormatter;
 
 /**
  * TODO: Support display of currency with the appropriate precision (10.50 USD, 525 JPY).
@@ -164,7 +165,7 @@ class Money implements CurrencyHolder
     {
         $locale = self::resolveLocale($locale);
     
-        $formatter = \NumberFormatter::create($locale, \NumberFormatter::DECIMAL);
+        $formatter = NumberFormatter::create($locale, NumberFormatter::DECIMAL);
         
         if (false === ($result = $formatter->parse($string))) {
             throw new \InvalidArgumentException(
@@ -192,7 +193,7 @@ class Money implements CurrencyHolder
     {
         $locale = self::resolveLocale($locale);
         
-        $formatter    = \NumberFormatter::create($locale, \NumberFormatter::CURRENCY);
+        $formatter    = NumberFormatter::create($locale, NumberFormatter::CURRENCY);
         $currency     = null;
         $parsedAmount = $formatter->parseCurrency($string, $currency);
         
@@ -537,9 +538,9 @@ class Money implements CurrencyHolder
     {
         $locale = self::resolveLocale($locale);
         
-        $formatter = \NumberFormatter::create($locale, \NumberFormatter::CURRENCY);
+        $formatter = NumberFormatter::create($locale, NumberFormatter::CURRENCY);
         $decimal   = bcdiv($this->amount, $this->currency->minorUnitMultiplier(), $this->currency->minorUnitExponent());
-        
+
         return $formatter->formatCurrency($decimal, $this->currency->code());
     }
     
@@ -548,7 +549,7 @@ class Money implements CurrencyHolder
     {
         $locale = self::resolveLocale($locale);
         
-        $formatter = \NumberFormatter::create($locale, \NumberFormatter::DECIMAL);
+        $formatter = NumberFormatter::create($locale, NumberFormatter::DECIMAL);
         $decimal   = bcdiv($this->amount, $this->currency->minorUnitMultiplier(), $this->currency->minorUnitExponent());
         
         return $formatter->format($decimal);

@@ -4,13 +4,14 @@ namespace Krixon\Money\Test;
 
 use Krixon\Money\CurrencyPair;
 use Krixon\Money\Money;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass Krixon\Money\CurrencyPair
+ * @coversDefaultClass \Krixon\Money\CurrencyPair
  * @covers ::<protected>
  * @covers ::<private>
  */
-class CurrencyPairTest extends \PHPUnit_Framework_TestCase
+class CurrencyPairTest extends TestCase
 {
     /**
      * @dataProvider isoStringInstantiationProvider
@@ -25,14 +26,14 @@ class CurrencyPairTest extends \PHPUnit_Framework_TestCase
     {
         $pair = CurrencyPair::fromIsoString($iso);
         
-        self::assertInstanceOf(CurrencyPair::class, $pair);
-        self::assertSame($base, $pair->baseCurrency()->code());
-        self::assertSame($counter, $pair->counterCurrency()->code());
-        self::assertSame($ratio, $pair->ratio()->toString());
+        static::assertInstanceOf(CurrencyPair::class, $pair);
+        static::assertSame($base, $pair->baseCurrency()->code());
+        static::assertSame($counter, $pair->counterCurrency()->code());
+        static::assertSame($ratio, $pair->ratio()->toString());
     }
     
     
-    public function isoStringInstantiationProvider()
+    public function isoStringInstantiationProvider() : array
     {
         return [
             ['EUR/USD 1.2500', 'EUR', 'USD', '5:4'],
@@ -50,21 +51,18 @@ class CurrencyPairTest extends \PHPUnit_Framework_TestCase
      * @param string $iso
      * @param int    $expected
      */
-    public function testCanConvertMoneyUsingBaseCurrency(
-        int $amount,
-        string $iso,
-        int $expected
-    ) {
+    public function testCanConvertMoneyUsingBaseCurrency(int $amount, string $iso, int $expected)
+    {
         $pair   = CurrencyPair::fromIsoString($iso);
         $money  = new Money($amount, $pair->baseCurrency());
         $result = $pair->convert($money);
         
-        self::assertSame($expected, $result->amount());
-        self::assertTrue($result->isInCurrency($pair->counterCurrency())); // Converted from base to counter.
+        static::assertSame($expected, $result->amount());
+        static::assertTrue($result->isInCurrency($pair->counterCurrency())); // Converted from base to counter.
     }
     
     
-    public function moneyConversionProvider()
+    public function moneyConversionProvider() : array
     {
         return [
             [7500, 'GBP/USD 0.7500', 10000], // £75 -> $100.
@@ -84,11 +82,11 @@ class CurrencyPairTest extends \PHPUnit_Framework_TestCase
     {
         $pair = CurrencyPair::fromIsoString($pair);
         
-        self::assertSame($expected, $pair->toString());
+        static::assertSame($expected, $pair->toString());
     }
     
     
-    public function stringConversionProvider()
+    public function stringConversionProvider() : array
     {
         return [
             ['GBP/USD 1', 'British Pound Sterling (GBP)/United States Dollar (USD) @ 1.0000 (1:1)'],
@@ -108,11 +106,11 @@ class CurrencyPairTest extends \PHPUnit_Framework_TestCase
     {
         $pairObj = CurrencyPair::fromIsoString($pair);
         
-        self::assertSame($pair, $pairObj->toIsoString());
+        static::assertSame($pair, $pairObj->toIsoString());
     }
     
     
-    public function isoStringProvider()
+    public function isoStringProvider() : array
     {
         return [
             ['GBP/USD 1.0000'],

@@ -9,12 +9,6 @@
       "email": "karlrixon@gmail.com"
     }
   ],
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "git@bitbucket.org:krixon/math.git"
-    }
-  ],
   "autoload": {
     "psr-4": {
       "Krixon\\Money\\": "src/",
@@ -22,17 +16,15 @@
     }
   },
   "require": {
-    "php": ">=7",
+    "php": ">=7.1",
     "ext-intl": "*",
     "ext-mbstring": "*",
     "ext-bcmath": "*",
-    "krixon/math": "dev-master"
+    "krixon/math": "^0.1.0"
 
   },
   "require-dev": {
-    "phpspec/phpspec": "2.5.*",
-    "phpunit/phpunit": "5.2.*",
-    "squizlabs/php_codesniffer": "2.6.2"
+    "phpunit/phpunit": "^8.5"
   },
   "minimum-stability": "stable"
 }

@@ -2,16 +2,23 @@
 
 namespace Krixon\Money\Test;
 
+use InvalidArgumentException;
 use Krixon\Math\Ratio;
 use Krixon\Money\Currency;
 use Krixon\Money\Exception\IllegalCurrencyException;
 use Krixon\Money\Money;
 use Krixon\Money\Exception\InvalidAmountException;
+use Locale;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+use TypeError;
+use function mb_str_split;
+use function var_dump;
 
 /**
  * Unit tests for the Money class.
  */
-class MoneyTest extends \PHPUnit_Framework_TestCase
+class MoneyTest extends TestCase
 {
     /**
      * @var string
@@ -22,24 +29,24 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     /**
      * @inheritdoc
      */
-    protected function setUp()
+    protected function setUp() : void
     {
         parent::setUp();
         
         // Store the default locale so it can be reset after running the test (see tearDown()).
-        $this->defaultLocale = \Locale::getDefault();
+        $this->defaultLocale = Locale::getDefault();
     }
     
     
     /**
      * @inheritdoc
      */
-    protected function tearDown()
+    protected function tearDown() : void
     {
         parent::tearDown();
         
         // Restore the default locale.
-        \Locale::setDefault($this->defaultLocale);
+        Locale::setDefault($this->defaultLocale);
     }
     
     
@@ -56,7 +63,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
         string $amount,
         int $expected,
         string $locale = null
-    ) {
+    ) : void {
         $money = Money::fromDecimalString($amount, new Currency($currency), $locale);
         
         $this->assertSame($expected, $money->amount());
@@ -97,7 +104,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
         int $expectedAmount,
         string $expectedCurrency,
         string $locale = null
-    ) {
+    ) : void {
         $money = Money::fromCurrencyString($amount, $locale);
         
         $this->assertSame($expectedAmount, $money->amount());
@@ -110,20 +117,24 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
         // TODO: Test different locales.
         
         return [
-            ['$123,456.2', 12345620, 'USD'],
-            ['$123,456.78', 12345678, 'USD'],
-            ['$123,456', 12345600, 'USD'],
-            ['$512.1', 51210, 'USD'],
-            ['-$999999.99', -99999999, 'USD'],
+            ['$123,456.2', 12345620, 'USD', 'en_US'],
+            ['$123,456.78', 12345678, 'USD', 'en_US'],
+            ['$123,456', 12345600, 'USD', 'en_US'],
+            ['$512.1', 51210, 'USD', 'en_US'],
+            ['USD512.1', 51210, 'USD', 'en_GB'],
+            ['US$512.1', 51210, 'USD', 'en_GB'],
+            ['USD512.1', 51210, 'USD'],
+            ['-$999999.99', -99999999, 'USD', 'en_US'],
             ['LYD123,456.789', 123456789, 'LYD'],
+            ['LYD123,456.789', 123456789, 'LYD', 'en_GB'],
             ['LYD123,456.7', 123456700, 'LYD'],
             ['LYD123,456', 123456000, 'LYD'],
             ['LYD666,555.444', 666555444, 'LYD'],
-            ['-¥987654', -987654, 'JPY'],
-            ['¥123,456', 123456, 'JPY'],
+            ['-¥987654', -987654, 'JPY', 'ja_JP'],
+            ['-JPY987654', -987654, 'JPY', 'en_GB'],
+            ['¥123,456', 123456, 'JPY', 'ja_JP'],
             ['£150', 15000, 'GBP', 'en_GB'],
             ['EGP150', 150000, 'EGP', 'en_GB'],
-            ['$512.1', 51210, 'USD', 'en_GB'],
             ['150,25 €', 15025, 'EUR', 'de_DE'],
             ['₹ 99,99,999.00', 999999900, 'INR', 'en_IN'],
         ];
@@ -139,7 +150,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanInstantiateFromArray($currency, array $amount, $expected)
+    public function testCanInstantiateFromArray($currency, array $amount, $expected) : void
     {
         $money = Money::fromArray($amount, new Currency($currency));
         
@@ -173,7 +184,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCannotInstantiateUsingMoreMinorUnitDigitsThanCurrencyAllows($currency, $minorAmount)
+    public function testCannotInstantiateUsingMoreMinorUnitDigitsThanCurrencyAllows($currency, $minorAmount) : void
     {
         $this->expectException(InvalidAmountException::class);
         
@@ -191,9 +202,9 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function testCannotInstantiateWithNonIntegerValue()
+    public function testCannotInstantiateWithNonIntegerValue() : void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         
         new Money(123.45, Currency::XTS());
     }
@@ -204,9 +215,9 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @param mixed $invalid
      */
-    public function testCannotInstantiateUsingInvalidDecimalString($invalid)
+    public function testCannotInstantiateUsingInvalidDecimalString($invalid) : void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         
         Money::fromDecimalString($invalid, Currency::XTS());
     }
@@ -230,9 +241,9 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @param mixed $invalid
      */
-    public function testCannotInstantiateUsingNonStringArgument($invalid)
+    public function testCannotInstantiateUsingNonStringArgument($invalid) : void
     {
-        $this->expectException(\TypeError::class);
+        $this->expectException(TypeError::class);
         
         Money::fromDecimalString($invalid, Currency::XTS());
     }
@@ -241,7 +252,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     public function nonStringDecimalStringProvider() : array
     {
         return [
-            [new \stdClass],
+            [new stdClass],
             [[1, 2, 3]],
         ];
     }
@@ -255,7 +266,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @param string $expected
      * @param string $locale
      */
-    public function testCanRenderToString(string $money, string $currency, string $expected, string $locale)
+    public function testCanRenderToString(string $money, string $currency, string $expected, string $locale) : void
     {
         $money = Money::fromDecimalString($money, new Currency($currency), 'en_GB');
         
@@ -271,23 +282,24 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
             ['150.250', 'USD', 'US$150.25', 'en_GB'],
             ['150.250', 'USD', '150,25 $US', 'fr_FR'],
             ['150.250', 'GBP', '£150.25', 'en'],
-            ['150.250', 'LYD', 'LYD150.250', 'en'],
+            ['150.250', 'LYD', 'LYD 150.250', 'en'],    // This uses a UTF-8 NO-BREAK-SPACE (0xC2 0xA0), not a regular space!
+            ['150.250', 'LYD', 'LYD 150.250', 'en_GB'], // This uses a UTF-8 NO-BREAK-SPACE (0xC2 0xA0), not a regular space!
             ['150.250', 'USD', '150,25 $', 'de_DE'],
             ['150.250', 'EUR', '150,25 €', 'de_DE'],
-            ['1,999,999', 'INR', '₹ 19,99,999.00', 'en_IN'],
+            ['1,999,999', 'INR', '₹19,99,999.00', 'en_IN'],
         ];
     }
     
     
-    public function testRenderingToStringUsesDefaultLocaleIfNoneSet()
+    public function testRenderingToStringUsesDefaultLocaleIfNoneSet() : void
     {
         $money = new Money(10000, Currency::GBP());
         
-        \Locale::setDefault('en_GB');
+        Locale::setDefault('en_GB');
         
         $this->assertSame('£100.00', $money->toCurrencyString());
         
-        \Locale::setDefault('fr_FR');
+        Locale::setDefault('fr_FR');
         
         $this->assertSame('100,00 £GB', $money->toCurrencyString());
     }
@@ -301,7 +313,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @param string $expected
      * @param string $locale
      */
-    public function testCanRenderToDecimalString(string $money, string $currency, string $expected, string $locale)
+    public function testCanRenderToDecimalString(string $money, string $currency, string $expected, string $locale) : void
     {
         $money = Money::fromDecimalString($money, new Currency($currency), 'en_GB');
         
@@ -325,15 +337,15 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function testRenderingToDecimalStringUsesDefaultLocaleIfNoneSet()
+    public function testRenderingToDecimalStringUsesDefaultLocaleIfNoneSet() : void
     {
         $money = new Money(10050, Currency::GBP());
         
-        \Locale::setDefault('en_GB');
+        Locale::setDefault('en_GB');
         
         $this->assertSame('100.5', $money->toDecimalString());
         
-        \Locale::setDefault('fr_FR');
+        Locale::setDefault('fr_FR');
         
         $this->assertSame('100,5', $money->toDecimalString());
     }
@@ -348,7 +360,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanDetermineIfInstancesAreInSameCurrency(string $a, string $b, $expected)
+    public function testCanDetermineIfInstancesAreInSameCurrency(string $a, string $b, $expected) : void
     {
         $a = Money::fromDecimalString('100', Currency::fromIsoCode($a));
         $b = Money::fromDecimalString('100', Currency::fromIsoCode($b));
@@ -376,14 +388,14 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanDetermineIfInstancesAreEqual(Money $a, Money $b, $expected)
+    public function testCanDetermineIfInstancesAreEqual(Money $a, Money $b, $expected) : void
     {
         $this->assertSame($expected, $a->equals($b));
         $this->assertSame($expected, $b->equals($a));
     }
     
     
-    public function equalInstancesProvider()
+    public function equalInstancesProvider() : array
     {
         return [
             [
@@ -419,7 +431,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanDetermineIfInstanceIsGreaterThanOtherInstance($a, $b, $expected)
+    public function testCanDetermineIfInstanceIsGreaterThanOtherInstance($a, $b, $expected) : void
     {
         $a = Money::fromDecimalString($a, Currency::GBP());
         $b = Money::fromDecimalString($b, Currency::GBP());
@@ -428,7 +440,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function greaterThanProvider()
+    public function greaterThanProvider() : array
     {
         return [
             ['100', '200', false],
@@ -449,7 +461,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @param string $b
      * @param bool   $expected
      */
-    public function testCanDetermineIfInstanceIsGreaterThanOrEqualToOtherInstance($a, $b, $expected)
+    public function testCanDetermineIfInstanceIsGreaterThanOrEqualToOtherInstance($a, $b, $expected) : void
     {
         $a = Money::fromDecimalString($a, Currency::GBP());
         $b = Money::fromDecimalString($b, Currency::GBP());
@@ -458,7 +470,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function greaterThanOrEqualToProvider()
+    public function greaterThanOrEqualToProvider() : array
     {
         return [
             ['100', '200', false],
@@ -479,7 +491,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @param string $b
      * @param bool   $expected
      */
-    public function testCanDetermineIfInstanceIsLessThanOtherInstance($a, $b, $expected)
+    public function testCanDetermineIfInstanceIsLessThanOtherInstance($a, $b, $expected) : void
     {
         $a = Money::fromDecimalString($a, Currency::GBP());
         $b = Money::fromDecimalString($b, Currency::GBP());
@@ -488,7 +500,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function lessThanProvider()
+    public function lessThanProvider() : array
     {
         return [
             ['100', '200', true],
@@ -509,7 +521,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @param string $b
      * @param bool   $expected
      */
-    public function testCanDetermineIfInstanceIsLessThanOrEqualToOtherInstance($a, $b, $expected)
+    public function testCanDetermineIfInstanceIsLessThanOrEqualToOtherInstance($a, $b, $expected) : void
     {
         $a = Money::fromDecimalString($a, Currency::GBP());
         $b = Money::fromDecimalString($b, Currency::GBP());
@@ -518,7 +530,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function lessThanOrEqualToProvider()
+    public function lessThanOrEqualToProvider() : array
     {
         return [
             ['100', '200', true],
@@ -532,7 +544,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function testCanDetermineIfZero()
+    public function testCanDetermineIfZero() : void
     {
         $money = Money::fromDecimalString('1', Currency::GBP());
         $this->assertFalse($money->isZero());
@@ -545,7 +557,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function testCanDetermineIfPositive()
+    public function testCanDetermineIfPositive() : void
     {
         $money = Money::fromDecimalString('1', Currency::GBP());
         $this->assertTrue($money->isPositive());
@@ -558,7 +570,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function testCanDetermineIfNegative()
+    public function testCanDetermineIfNegative() : void
     {
         $money = Money::fromDecimalString('1', Currency::GBP());
         $this->assertFalse($money->isNegative());
@@ -571,7 +583,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function testCannotCompareInstancesWithDifferentCurrencies()
+    public function testCannotCompareInstancesWithDifferentCurrencies() : void
     {
         $this->expectException(IllegalCurrencyException::class);
         $this->expectExceptionCode(IllegalCurrencyException::INCOMPATIBLE_MONEY_CURRENCIES);
@@ -592,7 +604,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanAddInstance($a, $b, $expected)
+    public function testCanAddInstance($a, $b, $expected) : void
     {
         $a = new Money($a, Currency::GBP());
         $b = new Money($b, Currency::GBP());
@@ -603,7 +615,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function additionProvider()
+    public function additionProvider() : array
     {
         return [
             [10000, 10000, 20000],
@@ -623,7 +635,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanSubtractInstance($a, $b, $expected)
+    public function testCanSubtractInstance($a, $b, $expected) : void
     {
         $a = new Money($a, Currency::GBP());
         $b = new Money($b, Currency::GBP());
@@ -634,7 +646,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function subtractionProvider()
+    public function subtractionProvider() : array
     {
         return [
             [10000, 10000, 0],
@@ -657,7 +669,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @internal     param int $b
      * @return void
      */
-    public function testCanMultiply($money, $multiplier, $expected, $roundingMode = Money::ROUND_HALF_UP)
+    public function testCanMultiply($money, $multiplier, $expected, $roundingMode = Money::ROUND_HALF_UP) : void
     {
         $money = new Money($money, Currency::GBP());
         
@@ -665,7 +677,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function multiplicationProvider()
+    public function multiplicationProvider() : array
     {
         // TODO: Test rounding modes.
         
@@ -682,22 +694,22 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @param mixed $multiplier
      */
-    public function testCannotMultiplyWithInvalidMultiplier($multiplier)
+    public function testCannotMultiplyWithInvalidMultiplier($multiplier) : void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         
         (new Money(10000, Currency::GBP()))->multiply($multiplier);
     }
     
     
-    public function invalidMultiplierProvider()
+    public function invalidMultiplierProvider() : array
     {
         return [
             ['string'],
             [true],
             [false],
             [null],
-            [new \stdClass],
+            [new stdClass],
         ];
     }
     
@@ -713,7 +725,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      * @internal     param int $b
      * @return void
      */
-    public function testCanDivide($money, $divisor, $expected, $roundingMode = Money::ROUND_HALF_UP)
+    public function testCanDivide($money, $divisor, $expected, $roundingMode = Money::ROUND_HALF_UP) : void
     {
         $money = new Money($money, Currency::GBP());
         
@@ -721,7 +733,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function divisionProvider()
+    public function divisionProvider() : array
     {
         // TODO: Test rounding modes.
         
@@ -738,9 +750,9 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @param mixed $divisor
      */
-    public function testCannotDivideWithInvalidDivisor($divisor)
+    public function testCannotDivideWithInvalidDivisor($divisor) : void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         
         (new Money(10000, Currency::GBP()))->divide($divisor);
     }
@@ -761,7 +773,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
      *
      * @return void
      */
-    public function testCanAllocateByRatios($a, array $ratios, array $expected)
+    public function testCanAllocateByRatios($a, array $ratios, array $expected) : void
     {
         $a       = new Money($a, Currency::GBP());
         $amounts = [];
@@ -778,7 +790,7 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
     
     
-    public function allocateByRatiosProvider()
+    public function allocateByRatiosProvider() : array
     {
         return [
             [10000, [], []],
@@ -790,9 +802,9 @@ class MoneyTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testCannotSumZeroInstances()
+    public function testCannotSumZeroInstances() : void
     {
-        self::expectException(\InvalidArgumentException::class);
+        self::expectException(InvalidArgumentException::class);
 
         Money::sum();
     }
