@@ -1,6 +1,6 @@
 {
   "name": "krixon/money",
-  "license": "proprietary",
+  "license": "MIT",
   "type": "library",
   "description": "Money and currency handling library",
   "authors": [
