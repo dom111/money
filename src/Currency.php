@@ -2,7 +2,7 @@
 
 namespace Krixon\Money;
 
-use Domain\Money\Exception;
+use Krixon\Money\Exception;
 use JsonSerializable;
 
 /**

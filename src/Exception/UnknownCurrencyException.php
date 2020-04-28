@@ -1,6 +1,6 @@
 <?php
 
-namespace Domain\Money\Exception;
+namespace Krixon\Money\Exception;
 
 /**
  * Thrown when an unknown Currency is encountered.
