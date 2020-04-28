@@ -18,10 +18,10 @@
   "require": {
     "php": ">=7.1",
     "ext-intl": "*",
+    "ext-json": "*",
     "ext-mbstring": "*",
     "ext-bcmath": "*",
     "krixon/math": "^0.1.0"
-
   },
   "require-dev": {
     "phpunit/phpunit": "^8.5"

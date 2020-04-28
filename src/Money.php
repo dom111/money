@@ -2,6 +2,7 @@
 
 namespace Krixon\Money;
 
+use JsonSerializable;
 use Krixon\Math\Decimal;
 use Krixon\Math\Ratio;
 use NumberFormatter;
@@ -22,7 +23,7 @@ use NumberFormatter;
  * The exponents are available via the Currency class so it's always possible to convert to the correct precision
  * when constructing a Money.
  */
-class Money implements CurrencyHolder
+class Money implements CurrencyHolder, JsonSerializable
 {
     use HoldsCurrency;
 
@@ -246,8 +247,17 @@ class Money implements CurrencyHolder
         
         return new static((int)($majorUnitAmount . $minorUnitAmount), $currency);
     }
-    
-    
+
+
+    public function jsonSerialize() : array
+    {
+        return [
+            'amount'   => $this->amount,
+            'currency' => $this->currency,
+        ];
+    }
+
+
     /**
      * The amount of Money in the smallest units of the Money's Currency (eg pence for GBP, cents for USD).
      *

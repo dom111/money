@@ -3,6 +3,7 @@
 namespace Krixon\Money;
 
 use Domain\Money\Exception;
+use JsonSerializable;
 
 /**
  * Value object for a currency.
@@ -174,9 +175,8 @@ use Domain\Money\Exception;
  * @method static Currency ZMK()
  * @method static Currency ZWL()
  */
-class Currency
+class Currency implements JsonSerializable
 {
-    
     /**
      * @var string
      */
@@ -440,8 +440,17 @@ class Currency
     {
         return new static($code);
     }
-    
-    
+
+
+    public function jsonSerialize() : array
+    {
+        return [
+            'code'       => $this->code,
+            'minorUnits' => $this->minorUnitMultiplier(),
+        ];
+    }
+
+
     /**
      * Returns the ISO currency code.
      *

@@ -12,6 +12,7 @@ use Locale;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use TypeError;
+use function json_encode;
 use function mb_str_split;
 use function var_dump;
 
@@ -348,6 +349,25 @@ class MoneyTest extends TestCase
         Locale::setDefault('fr_FR');
         
         $this->assertSame('100,5', $money->toDecimalString());
+    }
+
+
+    public function testJsonSerialization() : void
+    {
+        $money = new Money(10050, Currency::GBP());
+
+        static::assertJsonStringEqualsJsonString(
+            /** @lang JSON */ '
+            {
+              "amount": 10050,
+              "currency": {
+                "code": "GBP",
+                "minorUnits": 100  
+              }
+            }
+            ',
+            json_encode($money)
+        );
     }
     
     
