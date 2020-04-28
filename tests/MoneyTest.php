@@ -360,10 +360,7 @@ class MoneyTest extends TestCase
             /** @lang JSON */ '
             {
               "amount": 10050,
-              "currency": {
-                "code": "GBP",
-                "minorUnits": 100  
-              }
+              "currency": "GBP"
             }
             ',
             json_encode($money)

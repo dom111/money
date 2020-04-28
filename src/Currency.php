@@ -442,12 +442,9 @@ class Currency implements JsonSerializable
     }
 
 
-    public function jsonSerialize() : array
+    public function jsonSerialize() : string
     {
-        return [
-            'code'       => $this->code,
-            'minorUnits' => $this->minorUnitMultiplier(),
-        ];
+        return $this->code;
     }
 
 
